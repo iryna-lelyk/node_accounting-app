@@ -1,7 +1,8 @@
 # Accounting app (Node.js)
 
 An expense tracking app with 2 collections and 5 endpoints for each.
-Written on Node.js, Express (using Express Router). Data is saved in files as an array.
+Written on Node.js, Express (using Express Router) according to MVC pattern. 
+Data is saved in files as an array.
 
 Working with endpoints is well-described in the [documentation](https://app.swaggerhub.com/apis/YURIIHOLIUK_1/Accounting-App/1.0.0)
 
