@@ -1,25 +1,9 @@
 'use strict';
 
-let expenses = [];
+const { Expense } = require('../models/expenses');
 
-function init() {
-  expenses = [];
-}
-
-function getNewId() {
-  if (!expenses.length) {
-    return 1;
-  }
-
-  const maxId = expenses.reduce((prev, expense) => (
-    Math.max(prev, expense.id)
-  ), 0);
-
-  return maxId + 1;
-}
-
-function getAll(userId, category, from, to) {
-  let filteredExpenses = [...expenses];
+async function getAll(userId, category, from, to) {
+  let filteredExpenses = await Expense.findAll();
 
   if (category) {
     filteredExpenses = filteredExpenses.filter(expense =>
@@ -33,59 +17,48 @@ function getAll(userId, category, from, to) {
     return filteredExpenses;
   }
 
-  if (from && to) {
-    filteredExpenses = filteredExpenses.filter(expense =>
-      (expense.spentAt >= from && expense.spentAt <= to));
+  if (from) {
+    filteredExpenses = filteredExpenses.filter(expense => {
+      const n = new Date(from);
+
+      return expense.spentAt.getTime() >= n.getTime();
+    });
+  }
+
+  if (to) {
+    filteredExpenses = filteredExpenses.filter(expense => {
+      const n = new Date(to);
+
+      return expense.spentAt.getTime() <= n.getTime();
+    });
   }
 
   return filteredExpenses;
 }
 
 function getById(expenseId) {
-  const foundExpense = expenses.find(expense => expense.id === +expenseId);
-
-  return foundExpense || null;
+  return Expense.findByPk(Number(expenseId));
 }
 
 function create(expenseDetails) {
-  const {
-    userId,
-    spentAt,
-    title,
-    amount,
-    category,
-    note,
-  } = expenseDetails;
-
-  const newExpense = {
-    userId,
-    spentAt,
-    title,
-    amount,
-    category,
-    note,
-    id: getNewId(),
-  };
-
-  expenses.push(newExpense);
-
-  return newExpense;
+  return Expense.create({ ...expenseDetails });
 }
 
 function remove(expenseId) {
-  expenses = expenses.filter(expense => expense.id !== +expenseId);
+  return Expense.destroy({
+    where: { id: Number(expenseId) },
+  });
 }
 
 function update({ title, id }) {
-  const expense = getById(id);
-
-  Object.assign(expense, { title });
-
-  return expense;
+  return Expense.update({ title }, {
+    where: { id },
+    returning: true,
+    plain: true,
+  });
 }
 
 module.exports = {
-  init,
   getAll,
   getById,
   create,
